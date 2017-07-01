@@ -55,6 +55,7 @@
             this.bindingSource1 = new System.Windows.Forms.BindingSource(this.components);
             this.openFileLocationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripStatusLabelTotalRows = new System.Windows.Forms.ToolStripStatusLabel();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripContainer1.BottomToolStripPanel.SuspendLayout();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.TopToolStripPanel.SuspendLayout();
@@ -200,6 +201,7 @@
             this.toolStripButton1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.openViewToolStripMenuItem,
             this.saveViewAsToolStripMenuItem,
+            this.toolStripSeparator1,
             this.exitToolStripMenuItem});
             this.toolStripButton1.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButton1.Image")));
             this.toolStripButton1.ImageTransparentColor = System.Drawing.Color.Magenta;
@@ -287,6 +289,11 @@
             this.toolStripStatusLabelTotalRows.Size = new System.Drawing.Size(120, 33);
             this.toolStripStatusLabelTotalRows.Text = "TotalRows";
             // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(323, 6);
+            // 
             // Form1
             // 
             this.AllowDrop = true;
@@ -342,6 +349,7 @@
         private System.Windows.Forms.ToolStripMenuItem openDBXFileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem openFileLocationToolStripMenuItem;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabelTotalRows;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
     }
 }
 
