@@ -34,18 +34,21 @@
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.toolStripProgressBar1 = new System.Windows.Forms.ToolStripProgressBar();
             this.toolStripStatusLabelRows = new System.Windows.Forms.ToolStripStatusLabel();
+            this.toolStripStatusLabelTotalRows = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusLabelStatus = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusLabelSelected = new System.Windows.Forms.ToolStripStatusLabel();
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
             this.contextMenuStripGridView = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.playMediaFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openDBXFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.openFileLocationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripTop = new System.Windows.Forms.ToolStrip();
             this.toolStripButton1 = new System.Windows.Forms.ToolStripDropDownButton();
             this.openViewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.appendToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveViewAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripSpringTextBox1 = new Diggidag.ToolStripSpringTextBox();
@@ -53,9 +56,10 @@
             this.toolStripComboBoxFilterTypes = new System.Windows.Forms.ToolStripComboBox();
             this.dataSet1 = new System.Data.DataSet();
             this.bindingSource1 = new System.Windows.Forms.BindingSource(this.components);
-            this.openFileLocationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripStatusLabelTotalRows = new System.Windows.Forms.ToolStripStatusLabel();
-            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.syncCurrentViewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
+            this.syncCurrentViewToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripContainer1.BottomToolStripPanel.SuspendLayout();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.TopToolStripPanel.SuspendLayout();
@@ -117,6 +121,12 @@
             this.toolStripStatusLabelRows.Size = new System.Drawing.Size(69, 33);
             this.toolStripStatusLabelRows.Text = "Rows";
             // 
+            // toolStripStatusLabelTotalRows
+            // 
+            this.toolStripStatusLabelTotalRows.Name = "toolStripStatusLabelTotalRows";
+            this.toolStripStatusLabelTotalRows.Size = new System.Drawing.Size(120, 33);
+            this.toolStripStatusLabelTotalRows.Text = "TotalRows";
+            // 
             // toolStripStatusLabelStatus
             // 
             this.toolStripStatusLabelStatus.Name = "toolStripStatusLabelStatus";
@@ -158,9 +168,11 @@
             this.contextMenuStripGridView.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.playMediaFileToolStripMenuItem,
             this.openDBXFileToolStripMenuItem,
-            this.openFileLocationToolStripMenuItem});
+            this.openFileLocationToolStripMenuItem,
+            this.toolStripSeparator4,
+            this.syncCurrentViewToolStripMenuItem1});
             this.contextMenuStripGridView.Name = "contextMenuStripGridView";
-            this.contextMenuStripGridView.Size = new System.Drawing.Size(291, 112);
+            this.contextMenuStripGridView.Size = new System.Drawing.Size(291, 154);
             // 
             // playMediaFileToolStripMenuItem
             // 
@@ -175,6 +187,13 @@
             this.openDBXFileToolStripMenuItem.Size = new System.Drawing.Size(290, 36);
             this.openDBXFileToolStripMenuItem.Text = "Open DBX File";
             this.openDBXFileToolStripMenuItem.Click += new System.EventHandler(this.openDBXFileToolStripMenuItem_Click);
+            // 
+            // openFileLocationToolStripMenuItem
+            // 
+            this.openFileLocationToolStripMenuItem.Name = "openFileLocationToolStripMenuItem";
+            this.openFileLocationToolStripMenuItem.Size = new System.Drawing.Size(290, 36);
+            this.openFileLocationToolStripMenuItem.Text = "Open File Location";
+            this.openFileLocationToolStripMenuItem.Click += new System.EventHandler(this.openFileLocationToolStripMenuItem_Click);
             // 
             // toolStripTop
             // 
@@ -201,6 +220,8 @@
             this.toolStripButton1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.openViewToolStripMenuItem,
             this.saveViewAsToolStripMenuItem,
+            this.toolStripSeparator3,
+            this.syncCurrentViewToolStripMenuItem,
             this.toolStripSeparator1,
             this.exitToolStripMenuItem});
             this.toolStripButton1.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButton1.Image")));
@@ -222,14 +243,14 @@
             // openToolStripMenuItem
             // 
             this.openToolStripMenuItem.Name = "openToolStripMenuItem";
-            this.openToolStripMenuItem.Size = new System.Drawing.Size(268, 38);
+            this.openToolStripMenuItem.Size = new System.Drawing.Size(213, 38);
             this.openToolStripMenuItem.Text = "Open...";
             this.openToolStripMenuItem.Click += new System.EventHandler(this.openToolStripMenuItem_Click);
             // 
             // appendToolStripMenuItem
             // 
             this.appendToolStripMenuItem.Name = "appendToolStripMenuItem";
-            this.appendToolStripMenuItem.Size = new System.Drawing.Size(268, 38);
+            this.appendToolStripMenuItem.Size = new System.Drawing.Size(213, 38);
             this.appendToolStripMenuItem.Text = "Append...";
             this.appendToolStripMenuItem.Click += new System.EventHandler(this.appendToolStripMenuItem_Click);
             // 
@@ -239,6 +260,11 @@
             this.saveViewAsToolStripMenuItem.Size = new System.Drawing.Size(326, 38);
             this.saveViewAsToolStripMenuItem.Text = "Save View As Xml...";
             this.saveViewAsToolStripMenuItem.Click += new System.EventHandler(this.saveViewAsToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(323, 6);
             // 
             // exitToolStripMenuItem
             // 
@@ -276,23 +302,29 @@
             // 
             this.dataSet1.DataSetName = "NewDataSet";
             // 
-            // openFileLocationToolStripMenuItem
+            // syncCurrentViewToolStripMenuItem
             // 
-            this.openFileLocationToolStripMenuItem.Name = "openFileLocationToolStripMenuItem";
-            this.openFileLocationToolStripMenuItem.Size = new System.Drawing.Size(290, 36);
-            this.openFileLocationToolStripMenuItem.Text = "Open File Location";
-            this.openFileLocationToolStripMenuItem.Click += new System.EventHandler(this.openFileLocationToolStripMenuItem_Click);
+            this.syncCurrentViewToolStripMenuItem.Name = "syncCurrentViewToolStripMenuItem";
+            this.syncCurrentViewToolStripMenuItem.Size = new System.Drawing.Size(326, 38);
+            this.syncCurrentViewToolStripMenuItem.Text = "Sync Current View";
+            this.syncCurrentViewToolStripMenuItem.Click += new System.EventHandler(this.syncCurrentViewToolStripMenuItem_Click);
             // 
-            // toolStripStatusLabelTotalRows
+            // toolStripSeparator3
             // 
-            this.toolStripStatusLabelTotalRows.Name = "toolStripStatusLabelTotalRows";
-            this.toolStripStatusLabelTotalRows.Size = new System.Drawing.Size(120, 33);
-            this.toolStripStatusLabelTotalRows.Text = "TotalRows";
+            this.toolStripSeparator3.Name = "toolStripSeparator3";
+            this.toolStripSeparator3.Size = new System.Drawing.Size(323, 6);
             // 
-            // toolStripSeparator1
+            // toolStripSeparator4
             // 
-            this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(323, 6);
+            this.toolStripSeparator4.Name = "toolStripSeparator4";
+            this.toolStripSeparator4.Size = new System.Drawing.Size(287, 6);
+            // 
+            // syncCurrentViewToolStripMenuItem1
+            // 
+            this.syncCurrentViewToolStripMenuItem1.Name = "syncCurrentViewToolStripMenuItem1";
+            this.syncCurrentViewToolStripMenuItem1.Size = new System.Drawing.Size(290, 36);
+            this.syncCurrentViewToolStripMenuItem1.Text = "Sync Current View";
+            this.syncCurrentViewToolStripMenuItem1.Click += new System.EventHandler(this.syncCurrentViewToolStripMenuItem_Click);
             // 
             // Form1
             // 
@@ -350,6 +382,10 @@
         private System.Windows.Forms.ToolStripMenuItem openFileLocationToolStripMenuItem;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabelTotalRows;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+        private System.Windows.Forms.ToolStripMenuItem syncCurrentViewToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
+        private System.Windows.Forms.ToolStripMenuItem syncCurrentViewToolStripMenuItem1;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
     }
 }
 

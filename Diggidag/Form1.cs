@@ -71,7 +71,55 @@ namespace Diggidag
             toolStripStatusLabelStatus.Text = "Creating data view";
             await CreateDataViewAsync(dataList, datatable);
 
-            AfterDataImport();
+            AfterDataImport(dataGridView1);
+        }
+
+        private async Task SyncFoldersInCurrentDataViewAsync(DataGridView datagridview)
+        {
+            var datatable = ((datagridview.DataSource as BindingSource)?.DataSource as DataView)?.Table;
+
+            var sourceColumnIndex = datagridview.Columns["Source"].Index;
+            var fileLastWriteTimeIndex = datagridview.Columns["File Last Write Time"].Index;
+
+            if (datatable != null)
+            {
+                var removeRows = new List<DataRow>();
+
+                await Task.Run(async () => {
+                    foreach (DataRow row in datatable.Rows)
+                    {
+                        var sourceFile = row[sourceColumnIndex] as string;
+                        if (File.Exists(sourceFile))
+                        {
+                            if (DateTime.TryParse(row[fileLastWriteTimeIndex] as string, out var currentSourceWriteTime))
+                            {
+                                var fi = new FileInfo(sourceFile);
+
+                                if(fi.LastWriteTime > currentSourceWriteTime)
+                                {
+                                    var newRowDict = await GetMetaDataAsync(sourceFile);
+
+                                    foreach(var kv in newRowDict)
+                                    {
+                                        row[kv.Key] = kv.Value;
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            removeRows.Add(row);
+                        }
+                    }
+
+                    foreach (var rowToRemove in removeRows)
+                        datatable.Rows.Remove(rowToRemove);
+                });
+            }
+
+            datagridview.Refresh();
+
+            AfterDataImport(datagridview);
         }
 
         private DataTable GetDataTableFromXmlFile(string filename, DataTable datatable = null)
@@ -107,13 +155,13 @@ namespace Diggidag
             toolStripStatusLabelSelected.Text = string.Empty;
         }
 
-        private void AfterDataImport()
+        private void AfterDataImport(DataGridView datagridview)
         {
             var currentSelectedFilterIndex = toolStripComboBoxFilterTypes.SelectedIndex > 0 ? toolStripComboBoxFilterTypes.SelectedIndex : 0;
 
             toolStripComboBoxFilterTypes.Items.Clear();
 
-            foreach (DataGridViewColumn c in dataGridView1.Columns)
+            foreach (DataGridViewColumn c in datagridview.Columns)
                 toolStripComboBoxFilterTypes.Items.Add(c.Name);
 
             if (toolStripComboBoxFilterTypes.Items.Count > 0)
@@ -127,12 +175,12 @@ namespace Diggidag
                 saveViewAsToolStripMenuItem.Enabled = false;
             }
 
-            var totalDataRows = ((dataGridView1.DataSource as BindingSource)?.DataSource as DataView)?.Table?.Rows.Count ?? 0;
+            var totalDataRows = ((datagridview.DataSource as BindingSource)?.DataSource as DataView)?.Table?.Rows.Count ?? 0;
 
             toolStripStatusLabelStatus.Text = string.Empty;
             toolStripStatusLabelRows.Text = bindingSource1.Count.ToString();
             toolStripStatusLabelTotalRows.Text = "/ " + totalDataRows + " Rows";
-            if(dataGridView1.SelectedRows.Count == 0)
+            if(datagridview.SelectedRows.Count == 0)
                 toolStripStatusLabelSelected.Text = string.Empty;
         }
 
@@ -249,7 +297,7 @@ namespace Diggidag
                 }
             }
 
-            dataRow["DBX Filename"] = dbxFile;
+            dataRow["Source"] = dbxFile;
 
             var fi = new FileInfo(dbxFile);
 
@@ -347,9 +395,9 @@ namespace Diggidag
             {
                 foreach (DataGridViewRow row in dataGridView1.SelectedRows)
                 {
-                    if (File.Exists(@row.Cells[dataGridView1.Columns["DBX Filename"].Index].Value as string))
+                    if (File.Exists(@row.Cells[dataGridView1.Columns["Source"].Index].Value as string))
                     {
-                        expat = Path.GetDirectoryName(@row.Cells[dataGridView1.Columns["DBX Filename"].Index].Value as string) + "\\";
+                        expat = Path.GetDirectoryName(@row.Cells[dataGridView1.Columns["Source"].Index].Value as string) + "\\";
                     }
                 }
             }
@@ -377,7 +425,7 @@ namespace Diggidag
         {
             foreach (DataGridViewRow row in dataGridView1.SelectedRows)
             {
-                OpenFileInDefaultApplication(@row.Cells[dataGridView1.Columns["DBX Filename"].Index].Value as string);
+                OpenFileInDefaultApplication(@row.Cells[dataGridView1.Columns["Source"].Index].Value as string);
             }
         }
 
@@ -388,7 +436,7 @@ namespace Diggidag
                 string path = string.Empty;
                 try
                 {
-                    path = Path.GetDirectoryName(@row.Cells[dataGridView1.Columns["DBX Filename"].Index].Value as string);
+                    path = Path.GetDirectoryName(@row.Cells[dataGridView1.Columns["Source"].Index].Value as string);
                     if (Directory.Exists(path))
                         System.Diagnostics.Process.Start("explorer.exe", path);
                     else
@@ -399,6 +447,13 @@ namespace Diggidag
                     MessageBox.Show(ex.Message);
                 }
             }
+        }
+
+        private async void syncCurrentViewToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var senderGridView = ((sender as ToolStripMenuItem)?.Owner as ContextMenuStrip)?.SourceControl as DataGridView;
+
+            await SyncFoldersInCurrentDataViewAsync(senderGridView ?? dataGridView1);
         }
     }
 
