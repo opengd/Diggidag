@@ -17,7 +17,7 @@ namespace Diggidag
 
         string[] dbxMetaTags = new string[] 
         {
-            "TITLE", "FILENAME", "CREATOR"
+            "TITLE", "FILENAME", "CREATOR", "LENGTH"
         };
 
         public Form1()
@@ -78,33 +78,40 @@ namespace Diggidag
         {
             var datatable = ((datagridview.DataSource as BindingSource)?.DataSource as DataView)?.Table;
 
-            var sourceColumnIndex = datagridview.Columns["Source"].Index;
-            var fileLastWriteTimeIndex = datagridview.Columns["File Last Write Time"].Index;
+            var sourceColumnIndex = datagridview.Columns["Source"]?.Index;
+            var fileLastWriteTimeIndex = datagridview.Columns["File Last Write Time"]?.Index;
 
-            if (datatable != null)
+            if (datatable != null && sourceColumnIndex.HasValue && fileLastWriteTimeIndex.HasValue)
             {
                 var removeRows = new List<DataRow>();
+                var foldersAndFilesToCheckForMoreFiles = new Dictionary<string, List<string>>();
 
                 await Task.Run(async () => {
                     foreach (DataRow row in datatable.Rows)
                     {
-                        var sourceFile = row[sourceColumnIndex] as string;
+                        var sourceFile = row[sourceColumnIndex.Value] as string;
                         if (File.Exists(sourceFile))
                         {
-                            if (DateTime.TryParse(row[fileLastWriteTimeIndex] as string, out var currentSourceWriteTime))
+                            if (DateTime.TryParse(row[fileLastWriteTimeIndex.Value] as string, out var currentSourceWriteTime))
                             {
                                 var fi = new FileInfo(sourceFile);
 
-                                if(fi.LastWriteTime > currentSourceWriteTime)
+                                if (DateTime.TryParse(fi.LastWriteTime.ToString(), out var lastWriteTime) && lastWriteTime > currentSourceWriteTime)
                                 {
                                     var newRowDict = await GetMetaDataAsync(sourceFile);
 
                                     foreach(var kv in newRowDict)
                                     {
-                                        row[kv.Key] = kv.Value;
+                                        if (datatable.Columns.Contains(kv.Key))
+                                            row[kv.Key] = kv.Value;
+                                        //datatable.Columns.Add(kv.Key);
                                     }
                                 }
                             }
+                            if (!foldersAndFilesToCheckForMoreFiles.ContainsKey(Path.GetDirectoryName(sourceFile)))
+                                foldersAndFilesToCheckForMoreFiles.Add(Path.GetDirectoryName(sourceFile), new List<string>());
+
+                            foldersAndFilesToCheckForMoreFiles[Path.GetDirectoryName(sourceFile)].Add(sourceFile);
                         }
                         else
                         {
@@ -114,12 +121,41 @@ namespace Diggidag
 
                     foreach (var rowToRemove in removeRows)
                         datatable.Rows.Remove(rowToRemove);
+
+                    // Add slow add bad way to add new files to datatable
+                    foreach(var folder in foldersAndFilesToCheckForMoreFiles)
+                    {
+                        var folderFiles = Directory.GetFiles(folder.Key, "*.DBX", SearchOption.AllDirectories).ToList();
+
+                        foreach (var file in folder.Value)
+                        {
+                            if (folderFiles.Contains(file))
+                                folderFiles.Remove(file);
+                        }
+
+                        foreach(var file in folderFiles)
+                        {
+                            var newRowDict = await GetMetaDataAsync(file);
+
+                            var row = datatable.NewRow();
+
+                            foreach (var kv in newRowDict)
+                            {
+                                if (datatable.Columns.Contains(kv.Key))
+                                    row[kv.Key] = kv.Value;
+                            }
+
+                            datatable.Rows.Add(row);
+                        }
+                    }
                 });
+
+                var src = datagridview.DataSource;
+                datagridview.DataSource = null;
+                datagridview.DataSource = src;
+
+                AfterDataImport(datagridview);
             }
-
-            datagridview.Refresh();
-
-            AfterDataImport(datagridview);
         }
 
         private DataTable GetDataTableFromXmlFile(string filename, DataTable datatable = null)
