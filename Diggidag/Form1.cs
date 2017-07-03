@@ -86,6 +86,8 @@ namespace Diggidag
 
         private async Task SyncFoldersInCurrentDataViewAsync(DataGridView datagridview, SyncTypes syncType = SyncTypes.ChangesAddRemove)
         {
+            datagridview.Enabled = false;
+
             var datatable = ((datagridview.DataSource as BindingSource)?.DataSource as DataView)?.Table;
 
             var sourceColumnIndex = datagridview.Columns["Source"]?.Index;
@@ -97,6 +99,18 @@ namespace Diggidag
                 var foldersAndFilesToCheckForMoreFiles = new Dictionary<string, List<string>>();
 
                 await Task.Run(async () => {
+
+                    //toolStripStatusLabelStatus.Text = "Syncing changes in view";
+
+                    this.Invoke((MethodInvoker)delegate {
+                        toolStripStatusLabelStatus.Text = "Syncing changes in view";
+                    });
+
+                    toolStripProgressBar1.ProgressBar.Invoke((MethodInvoker)delegate {
+                        toolStripProgressBar1.Value = 0;
+                        toolStripProgressBar1.Maximum = datatable.Rows.Count;
+                    });
+
                     foreach (DataRow row in datatable.Rows)
                     {
                         var sourceFile = row[sourceColumnIndex.Value] as string;
@@ -115,7 +129,6 @@ namespace Diggidag
                                         {
                                             if (datatable.Columns.Contains(kv.Key))
                                                 row[kv.Key] = kv.Value;
-                                            //datatable.Columns.Add(kv.Key);
                                         }
                                 }
                             }
@@ -129,19 +142,49 @@ namespace Diggidag
                         {
                             removeRows.Add(row);
                         }
+
+                        toolStripProgressBar1.ProgressBar.Invoke((MethodInvoker)delegate {
+                            toolStripProgressBar1.Value++;
+                        });
                     }
 
                     if (syncType == SyncTypes.ChangesAddRemove || syncType == SyncTypes.ChangesRemove || syncType == SyncTypes.AddRemove || syncType == SyncTypes.Remove)
                     {
+                        //toolStripStatusLabelStatus.Text = "Removing files from view";
+
+                        this.Invoke((MethodInvoker)delegate {
+                            toolStripStatusLabelStatus.Text = "Removing files from view";
+                        });
+
+                        toolStripProgressBar1.ProgressBar.Invoke((MethodInvoker)delegate {
+                            toolStripProgressBar1.Value = 0;
+                            toolStripProgressBar1.Maximum = removeRows.Count;
+                        });
+
                         foreach (var rowToRemove in removeRows)
+                        {
                             datatable.Rows.Remove(rowToRemove);
+
+                            toolStripProgressBar1.ProgressBar.Invoke((MethodInvoker)delegate {
+                                toolStripProgressBar1.Value++;
+                            });
+                        }
                     }
 
                     // Add slow add bad way to add new files to datatable
                     if (syncType == SyncTypes.ChangesAddRemove || syncType == SyncTypes.ChangesAdd || syncType == SyncTypes.AddRemove || syncType == SyncTypes.Add)
                     {
+                        toolStripProgressBar1.ProgressBar.Invoke((MethodInvoker)delegate {
+                            toolStripProgressBar1.Value = 0;
+                            toolStripProgressBar1.Maximum = foldersAndFilesToCheckForMoreFiles.Count;
+                        });
+
                         foreach (var folder in foldersAndFilesToCheckForMoreFiles)
                         {
+                            this.Invoke((MethodInvoker)delegate {
+                                toolStripStatusLabelStatus.Text = "Add files to view from folder: " + folder;
+                            });
+                            
                             var folderFiles = Directory.GetFiles(folder.Key, "*.DBX", SearchOption.AllDirectories).ToList();
 
                             foreach (var file in folder.Value)
@@ -167,6 +210,10 @@ namespace Diggidag
                                     datatable.Rows.Add(row);
                                 }
                             }
+
+                            toolStripProgressBar1.ProgressBar.Invoke((MethodInvoker)delegate {
+                                toolStripProgressBar1.Value++;
+                            });
                         }
                     }
                 });
@@ -177,6 +224,9 @@ namespace Diggidag
 
                 AfterDataImport(datagridview);
             }
+            toolStripStatusLabelStatus.Text = "Sync complete";
+            toolStripProgressBar1.Value = 0;
+            datagridview.Enabled = true;
         }
 
         private DataTable GetDataTableFromXmlFile(string filename, DataTable datatable = null)
