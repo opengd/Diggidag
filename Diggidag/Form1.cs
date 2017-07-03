@@ -182,7 +182,7 @@ namespace Diggidag
                         foreach (var folder in foldersAndFilesToCheckForMoreFiles)
                         {
                             this.Invoke((MethodInvoker)delegate {
-                                toolStripStatusLabelStatus.Text = "Add files to view from folder: " + folder;
+                                toolStripStatusLabelStatus.Text = "Add files to view from folder: " + folder.Key;
                             });
                             
                             var folderFiles = Directory.GetFiles(folder.Key, "*.DBX", SearchOption.AllDirectories).ToList();

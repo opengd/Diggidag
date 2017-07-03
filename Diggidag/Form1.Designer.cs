@@ -111,9 +111,9 @@
             this.statusStrip1.ImageScalingSize = new System.Drawing.Size(32, 32);
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripProgressBar1,
+            this.toolStripStatusLabelStatus,
             this.toolStripStatusLabelRows,
             this.toolStripStatusLabelTotalRows,
-            this.toolStripStatusLabelStatus,
             this.toolStripStatusLabelSelected});
             this.statusStrip1.Location = new System.Drawing.Point(0, 0);
             this.statusStrip1.Name = "statusStrip1";
