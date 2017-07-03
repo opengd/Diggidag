@@ -510,7 +510,7 @@ namespace Diggidag
 
         private void clearToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            ((dataGridView1.DataSource as BindingSource)?.DataSource as DataView)?.Table.Clear();
+            ((dataGridView1.DataSource as BindingSource)?.DataSource as DataView)?.Table?.Clear();
 
             dataGridView1.DataSource = null;
 
