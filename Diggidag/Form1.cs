@@ -20,6 +20,11 @@ namespace Diggidag
             "TITLE", "FILENAME", "CREATOR", "LENGTH"
         };
 
+        enum SyncTypes
+        {
+            ChangesAddRemove, ChangesAdd, ChangesRemove, AddRemove, Changes, Add, Remove
+        }
+
         public Form1()
         {
             InitializeComponent();
@@ -74,7 +79,7 @@ namespace Diggidag
             AfterDataImport(dataGridView1);
         }
 
-        private async Task SyncFoldersInCurrentDataViewAsync(DataGridView datagridview)
+        private async Task SyncFoldersInCurrentDataViewAsync(DataGridView datagridview, SyncTypes syncType = SyncTypes.ChangesAddRemove)
         {
             var datatable = ((datagridview.DataSource as BindingSource)?.DataSource as DataView)?.Table;
 
@@ -92,7 +97,7 @@ namespace Diggidag
                         var sourceFile = row[sourceColumnIndex.Value] as string;
                         if (File.Exists(sourceFile))
                         {
-                            if (DateTime.TryParse(row[fileLastWriteTimeIndex.Value] as string, out var currentSourceWriteTime))
+                            if (DateTime.TryParse(row[fileLastWriteTimeIndex.Value] as string, out var currentSourceWriteTime) && (syncType == SyncTypes.ChangesAddRemove || syncType == SyncTypes.ChangesAdd || syncType == SyncTypes.ChangesRemove || syncType == SyncTypes.Changes))
                             {
                                 var fi = new FileInfo(sourceFile);
 
@@ -108,6 +113,7 @@ namespace Diggidag
                                     }
                                 }
                             }
+
                             if (!foldersAndFilesToCheckForMoreFiles.ContainsKey(Path.GetDirectoryName(sourceFile)))
                                 foldersAndFilesToCheckForMoreFiles.Add(Path.GetDirectoryName(sourceFile), new List<string>());
 
@@ -119,33 +125,39 @@ namespace Diggidag
                         }
                     }
 
-                    foreach (var rowToRemove in removeRows)
-                        datatable.Rows.Remove(rowToRemove);
+                    if (syncType == SyncTypes.ChangesAddRemove || syncType == SyncTypes.ChangesRemove || syncType == SyncTypes.AddRemove || syncType == SyncTypes.Remove)
+                    {
+                        foreach (var rowToRemove in removeRows)
+                            datatable.Rows.Remove(rowToRemove);
+                    }
 
                     // Add slow add bad way to add new files to datatable
-                    foreach(var folder in foldersAndFilesToCheckForMoreFiles)
+                    if (syncType == SyncTypes.ChangesAddRemove || syncType == SyncTypes.ChangesAdd || syncType == SyncTypes.AddRemove || syncType == SyncTypes.Add)
                     {
-                        var folderFiles = Directory.GetFiles(folder.Key, "*.DBX", SearchOption.AllDirectories).ToList();
-
-                        foreach (var file in folder.Value)
+                        foreach (var folder in foldersAndFilesToCheckForMoreFiles)
                         {
-                            if (folderFiles.Contains(file))
-                                folderFiles.Remove(file);
-                        }
+                            var folderFiles = Directory.GetFiles(folder.Key, "*.DBX", SearchOption.AllDirectories).ToList();
 
-                        foreach(var file in folderFiles)
-                        {
-                            var newRowDict = await GetMetaDataAsync(file);
-
-                            var row = datatable.NewRow();
-
-                            foreach (var kv in newRowDict)
+                            foreach (var file in folder.Value)
                             {
-                                if (datatable.Columns.Contains(kv.Key))
-                                    row[kv.Key] = kv.Value;
+                                if (folderFiles.Contains(file))
+                                    folderFiles.Remove(file);
                             }
 
-                            datatable.Rows.Add(row);
+                            foreach (var file in folderFiles)
+                            {
+                                var newRowDict = await GetMetaDataAsync(file);
+
+                                var row = datatable.NewRow();
+
+                                foreach (var kv in newRowDict)
+                                {
+                                    if (datatable.Columns.Contains(kv.Key))
+                                        row[kv.Key] = kv.Value;
+                                }
+
+                                datatable.Rows.Add(row);
+                            }
                         }
                     }
                 });
@@ -490,7 +502,10 @@ namespace Diggidag
         {
             var senderGridView = ((sender as ToolStripMenuItem)?.Owner as ContextMenuStrip)?.SourceControl as DataGridView;
 
-            await SyncFoldersInCurrentDataViewAsync(senderGridView ?? dataGridView1);
+            if(!Enum.TryParse<SyncTypes>((sender as ToolStripMenuItem).Tag as string, out var syncType))
+                syncType = SyncTypes.ChangesAddRemove;
+
+            await SyncFoldersInCurrentDataViewAsync(senderGridView ?? dataGridView1, syncType);
         }
 
         private void clearToolStripMenuItem_Click(object sender, EventArgs e)
