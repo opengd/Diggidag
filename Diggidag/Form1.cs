@@ -63,7 +63,10 @@ namespace Diggidag
                 {
                     toolStripStatusLabelStatus.Text = "Parsing dbx file: " + s;
 
-                    dataList.Add(new KeyValuePair<string, List<Dictionary<string, string>>>(s, new List<Dictionary<string, string>>() { await GetMetaDataAsync(s) }));
+                    var meta = await GetMetaDataAsync(s);
+                    
+                    if(meta.Count > 0)
+                        dataList.Add(new KeyValuePair<string, List<Dictionary<string, string>>>(s, new List<Dictionary<string, string>>() { meta }));
                 }
                 else if (File.Exists(s) && Path.GetExtension(s).ToLower().Equals(".xml"))
                 {
@@ -105,12 +108,13 @@ namespace Diggidag
                                 {
                                     var newRowDict = await GetMetaDataAsync(sourceFile);
 
-                                    foreach(var kv in newRowDict)
-                                    {
-                                        if (datatable.Columns.Contains(kv.Key))
-                                            row[kv.Key] = kv.Value;
-                                        //datatable.Columns.Add(kv.Key);
-                                    }
+                                    if (newRowDict.Count > 0)
+                                        foreach (var kv in newRowDict)
+                                        {
+                                            if (datatable.Columns.Contains(kv.Key))
+                                                row[kv.Key] = kv.Value;
+                                            //datatable.Columns.Add(kv.Key);
+                                        }
                                 }
                             }
 
@@ -148,15 +152,18 @@ namespace Diggidag
                             {
                                 var newRowDict = await GetMetaDataAsync(file);
 
-                                var row = datatable.NewRow();
-
-                                foreach (var kv in newRowDict)
+                                if (newRowDict.Count > 0)
                                 {
-                                    if (datatable.Columns.Contains(kv.Key))
-                                        row[kv.Key] = kv.Value;
-                                }
+                                    var row = datatable.NewRow();
 
-                                datatable.Rows.Add(row);
+                                    foreach (var kv in newRowDict)
+                                    {
+                                        if (datatable.Columns.Contains(kv.Key))
+                                            row[kv.Key] = kv.Value;
+                                    }
+
+                                    datatable.Rows.Add(row);
+                                }
                             }
                         }
                     }
@@ -326,7 +333,9 @@ namespace Diggidag
 
                 foreach (var dbxFile in files)
                 {
-                    dataList.Add(GetMetaData(dbxFile));
+                    var meta = GetMetaData(dbxFile);
+                    if(meta.Count > 0)
+                        dataList.Add(meta);
 
                     toolStripProgressBar1.ProgressBar.Invoke((MethodInvoker)(() => {
                         toolStripProgressBar1.Value++;
@@ -355,22 +364,30 @@ namespace Diggidag
         {
             var dataRow = new Dictionary<string, string>();
 
-            using (var reader = XmlReader.Create(dbxFile))
+            try
             {
-                foreach(var tag in dbxMetaTags)
+
+                using (var reader = XmlReader.Create(dbxFile))
                 {
-                    reader.ReadToFollowing(tag);
-                    if(reader.NodeType != XmlNodeType.None)
-                        dataRow[tag] = reader.ReadElementContentAsString();
+                    foreach (var tag in dbxMetaTags)
+                    {
+                        reader.ReadToFollowing(tag);
+                        if (reader.NodeType != XmlNodeType.None)
+                            dataRow[tag] = reader.ReadElementContentAsString();
+                    }
                 }
+
+                dataRow["Source"] = dbxFile;
+
+                var fi = new FileInfo(dbxFile);
+
+                dataRow["File Last Write Time"] = fi.LastWriteTime.ToString();
+                dataRow["File Creation Time"] = fi.CreationTime.ToString();
             }
-
-            dataRow["Source"] = dbxFile;
-
-            var fi = new FileInfo(dbxFile);
-
-            dataRow["File Last Write Time"] = fi.LastWriteTime.ToString();
-            dataRow["File Creation Time"] = fi.CreationTime.ToString();
+            catch (Exception ex)
+            {
+                dataRow = new Dictionary<string, string>();
+            }
 
             return dataRow;
         }
