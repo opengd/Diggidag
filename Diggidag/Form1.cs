@@ -20,6 +20,8 @@ namespace Diggidag
             "TITLE", "FILENAME", "CREATOR", "LENGTH"
         };
 
+        string defaultFilterTextBoxText = "Your filter text...";
+
         enum SyncTypes
         {
             ChangesAddRemove, ChangesAdd, ChangesRemove, AddRemove, Changes, Add, Remove
@@ -323,7 +325,7 @@ namespace Diggidag
             if(dataList == null)
                 dataList = new List<Dictionary<string, string>>();
 
-            await Task.Run(() =>
+            await Task.Run(async () =>
             {
                 var files = Directory.GetFiles(@path, "*.DBX",SearchOption.AllDirectories);
 
@@ -333,7 +335,7 @@ namespace Diggidag
 
                 foreach (var dbxFile in files)
                 {
-                    var meta = GetMetaData(dbxFile);
+                    var meta = await GetMetaDataAsync(dbxFile);
                     if(meta.Count > 0)
                         dataList.Add(meta);
 
@@ -350,44 +352,34 @@ namespace Diggidag
 
         private async Task<Dictionary<string, string>> GetMetaDataAsync(string dbxFile)
         {
-            var d = new Dictionary<string, string>();
+            var dataRow = new Dictionary<string, string>();
 
             await Task.Run(() =>
             {
-                d = GetMetaData(dbxFile);
-            });
-
-            return d;
-        }
-
-        private Dictionary<string, string> GetMetaData(string dbxFile)
-        {
-            var dataRow = new Dictionary<string, string>();
-
-            try
-            {
-
-                using (var reader = XmlReader.Create(dbxFile))
+                try
                 {
-                    foreach (var tag in dbxMetaTags)
+                    using (var reader = XmlReader.Create(dbxFile))
                     {
-                        reader.ReadToFollowing(tag);
-                        if (reader.NodeType != XmlNodeType.None)
-                            dataRow[tag] = reader.ReadElementContentAsString();
+                        foreach (var tag in dbxMetaTags)
+                        {
+                            reader.ReadToFollowing(tag);
+                            if (reader.NodeType != XmlNodeType.None)
+                                dataRow[tag] = reader.ReadElementContentAsString();
+                        }
                     }
+
+                    dataRow["Source"] = dbxFile;
+
+                    var fi = new FileInfo(dbxFile);
+
+                    dataRow["File Last Write Time"] = fi.LastWriteTime.ToString();
+                    dataRow["File Creation Time"] = fi.CreationTime.ToString();
                 }
-
-                dataRow["Source"] = dbxFile;
-
-                var fi = new FileInfo(dbxFile);
-
-                dataRow["File Last Write Time"] = fi.LastWriteTime.ToString();
-                dataRow["File Creation Time"] = fi.CreationTime.ToString();
-            }
-            catch (Exception ex)
-            {
-                dataRow = new Dictionary<string, string>();
-            }
+                catch (Exception ex)
+                {
+                    dataRow = new Dictionary<string, string>();
+                }
+            });
 
             return dataRow;
         }
@@ -399,7 +391,7 @@ namespace Diggidag
 
         private void toolStripSpringTextBox1_TextChanged(object sender, EventArgs e)
         {
-            if (!string.IsNullOrEmpty(toolStripSpringTextBox1.Text))
+            if (!string.IsNullOrEmpty(toolStripSpringTextBox1.Text) && !toolStripSpringTextBox1.Text.Equals(defaultFilterTextBoxText))
             {
                 if (!string.IsNullOrEmpty((string)toolStripComboBoxFilterTypes.SelectedItem))
                     bindingSource1.Filter = "[" + (string)toolStripComboBoxFilterTypes.SelectedItem + "]" + " like '*" + toolStripSpringTextBox1.Text + "*'";
@@ -409,16 +401,19 @@ namespace Diggidag
                     {
                         bindingSource1.Filter = toolStripSpringTextBox1.Text;
                     }
-                    catch(Exception ex)
+                    catch (Exception ex)
                     {
                         bindingSource1.Filter = null;
                     }
                 }
             }
-            else
+            else if (!toolStripSpringTextBox1.Text.Equals(defaultFilterTextBoxText))
+            {
                 bindingSource1.Filter = null;
+                toolStripStatusLabelRows.Text = "Your filter text...";
+            }
 
-            toolStripStatusLabelRows.Text = bindingSource1.Count.ToString();
+            toolStripStatusLabelRows.Text = !toolStripSpringTextBox1.Text.Equals(defaultFilterTextBoxText) ? bindingSource1.Count.ToString() : string.Empty;
         }
 
         private void dataGridView1_SelectionChanged(object sender, EventArgs e)
@@ -551,6 +546,22 @@ namespace Diggidag
             dataGridView1.DataSource = null;
 
             AfterDataImport(dataGridView1);
+        }
+
+        private void toolStripSpringTextBox1_Leave(object sender, EventArgs e)
+        {
+            if (string.IsNullOrEmpty(toolStripSpringTextBox1.Text))
+            {
+                toolStripSpringTextBox1.Text = defaultFilterTextBoxText;
+            }
+        }
+
+        private void toolStripSpringTextBox1_Enter(object sender, EventArgs e)
+        {
+            if (toolStripSpringTextBox1.Text.Equals(defaultFilterTextBoxText))
+            {
+                toolStripSpringTextBox1.Text = string.Empty;
+            }
         }
     }
 

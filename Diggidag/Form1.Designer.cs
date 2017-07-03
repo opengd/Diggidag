@@ -329,6 +329,9 @@
             this.toolStripSpringTextBox1.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
             this.toolStripSpringTextBox1.Name = "toolStripSpringTextBox1";
             this.toolStripSpringTextBox1.Size = new System.Drawing.Size(1358, 40);
+            this.toolStripSpringTextBox1.Text = "Your filter text...";
+            this.toolStripSpringTextBox1.Enter += new System.EventHandler(this.toolStripSpringTextBox1_Enter);
+            this.toolStripSpringTextBox1.Leave += new System.EventHandler(this.toolStripSpringTextBox1_Leave);
             this.toolStripSpringTextBox1.TextChanged += new System.EventHandler(this.toolStripSpringTextBox1_TextChanged);
             // 
             // toolStripLabel1
