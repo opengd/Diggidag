@@ -42,12 +42,16 @@
             this.playMediaFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openDBXFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openFileLocationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
+            this.syncCurrentViewToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripTop = new System.Windows.Forms.ToolStrip();
             this.toolStripButton1 = new System.Windows.Forms.ToolStripDropDownButton();
             this.openViewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.appendToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveViewAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
+            this.syncCurrentViewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
@@ -56,10 +60,8 @@
             this.toolStripComboBoxFilterTypes = new System.Windows.Forms.ToolStripComboBox();
             this.dataSet1 = new System.Data.DataSet();
             this.bindingSource1 = new System.Windows.Forms.BindingSource(this.components);
-            this.syncCurrentViewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
-            this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
-            this.syncCurrentViewToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.clearToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripContainer1.BottomToolStripPanel.SuspendLayout();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.TopToolStripPanel.SuspendLayout();
@@ -195,6 +197,18 @@
             this.openFileLocationToolStripMenuItem.Text = "Open File Location";
             this.openFileLocationToolStripMenuItem.Click += new System.EventHandler(this.openFileLocationToolStripMenuItem_Click);
             // 
+            // toolStripSeparator4
+            // 
+            this.toolStripSeparator4.Name = "toolStripSeparator4";
+            this.toolStripSeparator4.Size = new System.Drawing.Size(287, 6);
+            // 
+            // syncCurrentViewToolStripMenuItem1
+            // 
+            this.syncCurrentViewToolStripMenuItem1.Name = "syncCurrentViewToolStripMenuItem1";
+            this.syncCurrentViewToolStripMenuItem1.Size = new System.Drawing.Size(290, 36);
+            this.syncCurrentViewToolStripMenuItem1.Text = "Sync Current View";
+            this.syncCurrentViewToolStripMenuItem1.Click += new System.EventHandler(this.syncCurrentViewToolStripMenuItem_Click);
+            // 
             // toolStripTop
             // 
             this.toolStripTop.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -223,6 +237,8 @@
             this.toolStripSeparator3,
             this.syncCurrentViewToolStripMenuItem,
             this.toolStripSeparator1,
+            this.clearToolStripMenuItem,
+            this.toolStripSeparator5,
             this.exitToolStripMenuItem});
             this.toolStripButton1.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButton1.Image")));
             this.toolStripButton1.ImageTransparentColor = System.Drawing.Color.Magenta;
@@ -260,6 +276,18 @@
             this.saveViewAsToolStripMenuItem.Size = new System.Drawing.Size(326, 38);
             this.saveViewAsToolStripMenuItem.Text = "Save View As Xml...";
             this.saveViewAsToolStripMenuItem.Click += new System.EventHandler(this.saveViewAsToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator3
+            // 
+            this.toolStripSeparator3.Name = "toolStripSeparator3";
+            this.toolStripSeparator3.Size = new System.Drawing.Size(323, 6);
+            // 
+            // syncCurrentViewToolStripMenuItem
+            // 
+            this.syncCurrentViewToolStripMenuItem.Name = "syncCurrentViewToolStripMenuItem";
+            this.syncCurrentViewToolStripMenuItem.Size = new System.Drawing.Size(326, 38);
+            this.syncCurrentViewToolStripMenuItem.Text = "Sync Current View";
+            this.syncCurrentViewToolStripMenuItem.Click += new System.EventHandler(this.syncCurrentViewToolStripMenuItem_Click);
             // 
             // toolStripSeparator1
             // 
@@ -302,29 +330,17 @@
             // 
             this.dataSet1.DataSetName = "NewDataSet";
             // 
-            // syncCurrentViewToolStripMenuItem
+            // clearToolStripMenuItem
             // 
-            this.syncCurrentViewToolStripMenuItem.Name = "syncCurrentViewToolStripMenuItem";
-            this.syncCurrentViewToolStripMenuItem.Size = new System.Drawing.Size(326, 38);
-            this.syncCurrentViewToolStripMenuItem.Text = "Sync Current View";
-            this.syncCurrentViewToolStripMenuItem.Click += new System.EventHandler(this.syncCurrentViewToolStripMenuItem_Click);
+            this.clearToolStripMenuItem.Name = "clearToolStripMenuItem";
+            this.clearToolStripMenuItem.Size = new System.Drawing.Size(326, 38);
+            this.clearToolStripMenuItem.Text = "Clear Current View";
+            this.clearToolStripMenuItem.Click += new System.EventHandler(this.clearToolStripMenuItem_Click);
             // 
-            // toolStripSeparator3
+            // toolStripSeparator5
             // 
-            this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(323, 6);
-            // 
-            // toolStripSeparator4
-            // 
-            this.toolStripSeparator4.Name = "toolStripSeparator4";
-            this.toolStripSeparator4.Size = new System.Drawing.Size(287, 6);
-            // 
-            // syncCurrentViewToolStripMenuItem1
-            // 
-            this.syncCurrentViewToolStripMenuItem1.Name = "syncCurrentViewToolStripMenuItem1";
-            this.syncCurrentViewToolStripMenuItem1.Size = new System.Drawing.Size(290, 36);
-            this.syncCurrentViewToolStripMenuItem1.Text = "Sync Current View";
-            this.syncCurrentViewToolStripMenuItem1.Click += new System.EventHandler(this.syncCurrentViewToolStripMenuItem_Click);
+            this.toolStripSeparator5.Name = "toolStripSeparator5";
+            this.toolStripSeparator5.Size = new System.Drawing.Size(323, 6);
             // 
             // Form1
             // 
@@ -386,6 +402,8 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
         private System.Windows.Forms.ToolStripMenuItem syncCurrentViewToolStripMenuItem1;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
+        private System.Windows.Forms.ToolStripMenuItem clearToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
     }
 }
 

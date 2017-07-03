@@ -329,7 +329,8 @@ namespace Diggidag
                 foreach(var tag in dbxMetaTags)
                 {
                     reader.ReadToFollowing(tag);
-                    dataRow[tag] = reader.ReadElementContentAsString();
+                    if(reader.NodeType != XmlNodeType.None)
+                        dataRow[tag] = reader.ReadElementContentAsString();
                 }
             }
 
@@ -490,6 +491,15 @@ namespace Diggidag
             var senderGridView = ((sender as ToolStripMenuItem)?.Owner as ContextMenuStrip)?.SourceControl as DataGridView;
 
             await SyncFoldersInCurrentDataViewAsync(senderGridView ?? dataGridView1);
+        }
+
+        private void clearToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ((dataGridView1.DataSource as BindingSource)?.DataSource as DataView)?.Table.Clear();
+
+            dataGridView1.DataSource = null;
+
+            AfterDataImport(dataGridView1);
         }
     }
 
