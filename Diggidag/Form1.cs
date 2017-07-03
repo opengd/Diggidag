@@ -172,11 +172,30 @@ namespace Diggidag
 
         private DataTable GetDataTableFromXmlFile(string filename, DataTable datatable = null)
         {
-            if(datatable == null)
-                datatable = new DataTable();
+            if (datatable == null)
+            {
+                datatable = new DataTable();          
+            }
 
-            datatable.TableName = filename;
-            datatable.ReadXml(filename);
+            var dbname = string.Empty;
+            
+            using (var reader = XmlReader.Create(filename))
+            {
+                reader.ReadToFollowing("xs:element");
+                
+                dbname = reader.GetAttribute("msdata:MainDataTable");
+
+                dbname = XmlConvert.DecodeName(dbname);
+            }
+            
+            if (string.IsNullOrEmpty(datatable.TableName))
+                datatable.TableName = filename;
+
+            var tempdatatable = new DataTable();
+            tempdatatable.TableName = dbname;
+            tempdatatable.ReadXml(filename);
+
+            datatable.Merge(tempdatatable, true, MissingSchemaAction.Add);
 
             return datatable;
         }
