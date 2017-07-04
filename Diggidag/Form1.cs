@@ -15,6 +15,8 @@ namespace Diggidag
     {
         //int totalDataRows;
 
+        CancellationTokenSource tokenSource;
+
         string[] dbxMetaTags = new string[] 
         {
             "TITLE", "FILENAME", "CREATOR", "LENGTH"
@@ -30,6 +32,8 @@ namespace Diggidag
         public Form1()
         {
             InitializeComponent();
+
+            tokenSource = new CancellationTokenSource();
 
             BeforeDataImport();
         }
@@ -98,123 +102,156 @@ namespace Diggidag
                 var removeRows = new List<DataRow>();
                 var foldersAndFilesToCheckForMoreFiles = new Dictionary<string, List<string>>();
 
-                await Task.Run(async () => {
+                tokenSource = new CancellationTokenSource();
+                var token = tokenSource.Token;
 
-                    //toolStripStatusLabelStatus.Text = "Syncing changes in view";
-
-                    this.Invoke((MethodInvoker)delegate {
-                        toolStripStatusLabelStatus.Text = "Syncing changes in view";
-                    });
-
-                    toolStripProgressBar1.ProgressBar.Invoke((MethodInvoker)delegate {
-                        toolStripProgressBar1.Value = 0;
-                        toolStripProgressBar1.Maximum = datatable.Rows.Count;
-                    });
-
-                    foreach (DataRow row in datatable.Rows)
+                /*
+                var syncTask = Task.Run(async () => {
+                    while (!token.IsCancellationRequested)
                     {
-                        var sourceFile = row[sourceColumnIndex.Value] as string;
-                        if (File.Exists(sourceFile))
-                        {
-                            if (DateTime.TryParse(row[fileLastWriteTimeIndex.Value] as string, out var currentSourceWriteTime) && (syncType == SyncTypes.ChangesAddRemove || syncType == SyncTypes.ChangesAdd || syncType == SyncTypes.ChangesRemove || syncType == SyncTypes.Changes))
-                            {
-                                var fi = new FileInfo(sourceFile);
+                        await Task.Delay(100);
+                    }
 
-                                if (DateTime.TryParse(fi.LastWriteTime.ToString(), out var lastWriteTime) && lastWriteTime > currentSourceWriteTime)
+                    token.ThrowIfCancellationRequested();
+                }, token);
+                */
+
+                await Task.Run(() => {                    
+                    
+                    var syncTask = Task.Factory.StartNew(async () => {
+                        this.Invoke((MethodInvoker)delegate {
+                            toolStripStatusLabelStatus.Text = "Syncing changes in view";
+                        });
+
+                        toolStripProgressBar1.ProgressBar.Invoke((MethodInvoker)delegate {
+                            toolStripProgressBar1.Value = 0;
+                            toolStripProgressBar1.Maximum = datatable.Rows.Count;
+                        });
+
+                        foreach (DataRow row in datatable.Rows)
+                        {
+                            token.ThrowIfCancellationRequested();
+
+                            var sourceFile = row[sourceColumnIndex.Value] as string;
+                            if (File.Exists(sourceFile))
+                            {
+                                if (DateTime.TryParse(row[fileLastWriteTimeIndex.Value] as string, out var currentSourceWriteTime) && (syncType == SyncTypes.ChangesAddRemove || syncType == SyncTypes.ChangesAdd || syncType == SyncTypes.ChangesRemove || syncType == SyncTypes.Changes))
                                 {
-                                    var newRowDict = await GetMetaDataAsync(sourceFile);
+                                    var fi = new FileInfo(sourceFile);
+
+                                    if (DateTime.TryParse(fi.LastWriteTime.ToString(), out var lastWriteTime) && lastWriteTime > currentSourceWriteTime)
+                                    {
+                                        var newRowDict = await GetMetaDataAsync(sourceFile);
+
+                                        if (newRowDict.Count > 0)
+                                            foreach (var kv in newRowDict)
+                                            {
+                                                if (datatable.Columns.Contains(kv.Key))
+                                                    row[kv.Key] = kv.Value;
+                                            }
+                                    }
+                                }
+
+                                if (!foldersAndFilesToCheckForMoreFiles.ContainsKey(Path.GetDirectoryName(sourceFile)))
+                                    foldersAndFilesToCheckForMoreFiles.Add(Path.GetDirectoryName(sourceFile), new List<string>());
+
+                                foldersAndFilesToCheckForMoreFiles[Path.GetDirectoryName(sourceFile)].Add(sourceFile);
+                            }
+                            else
+                            {
+                                removeRows.Add(row);
+                            }
+
+                            toolStripProgressBar1.ProgressBar.Invoke((MethodInvoker)delegate {
+                                toolStripProgressBar1.Value++;
+                            });
+                        }
+
+                        if (syncType == SyncTypes.ChangesAddRemove || syncType == SyncTypes.ChangesRemove || syncType == SyncTypes.AddRemove || syncType == SyncTypes.Remove)
+                        {
+                            this.Invoke((MethodInvoker)delegate {
+                                toolStripStatusLabelStatus.Text = "Removing files from view";
+                            });
+
+                            toolStripProgressBar1.ProgressBar.Invoke((MethodInvoker)delegate {
+                                toolStripProgressBar1.Value = 0;
+                                toolStripProgressBar1.Maximum = removeRows.Count;
+                            });
+
+                            foreach (var rowToRemove in removeRows)
+                            {
+                                token.ThrowIfCancellationRequested();
+
+                                datatable.Rows.Remove(rowToRemove);
+
+                                toolStripProgressBar1.ProgressBar.Invoke((MethodInvoker)delegate {
+                                    toolStripProgressBar1.Value++;
+                                });
+                            }
+                        }
+
+                        // Add slow add bad way to add new files to datatable
+                        if (syncType == SyncTypes.ChangesAddRemove || syncType == SyncTypes.ChangesAdd || syncType == SyncTypes.AddRemove || syncType == SyncTypes.Add)
+                        {
+                            toolStripProgressBar1.ProgressBar.Invoke((MethodInvoker)delegate {
+                                toolStripProgressBar1.Value = 0;
+                                toolStripProgressBar1.Maximum = foldersAndFilesToCheckForMoreFiles.Count;
+                            });
+
+                            foreach (var folder in foldersAndFilesToCheckForMoreFiles)
+                            {
+                                this.Invoke((MethodInvoker)delegate {
+                                    toolStripStatusLabelStatus.Text = "Add files to view from folder: " + folder.Key;
+                                });
+                            
+                                var folderFiles = Directory.GetFiles(folder.Key, "*.DBX", SearchOption.AllDirectories).ToList();
+
+                                foreach (var file in folder.Value)
+                                {
+                                    if (folderFiles.Contains(file))
+                                        folderFiles.Remove(file);
+                                }
+
+                                foreach (var file in folderFiles)
+                                {
+                                    token.ThrowIfCancellationRequested();
+
+                                    var newRowDict = await GetMetaDataAsync(file);
 
                                     if (newRowDict.Count > 0)
+                                    {
+                                        var row = datatable.NewRow();
+
                                         foreach (var kv in newRowDict)
                                         {
                                             if (datatable.Columns.Contains(kv.Key))
                                                 row[kv.Key] = kv.Value;
                                         }
-                                }
-                            }
 
-                            if (!foldersAndFilesToCheckForMoreFiles.ContainsKey(Path.GetDirectoryName(sourceFile)))
-                                foldersAndFilesToCheckForMoreFiles.Add(Path.GetDirectoryName(sourceFile), new List<string>());
-
-                            foldersAndFilesToCheckForMoreFiles[Path.GetDirectoryName(sourceFile)].Add(sourceFile);
-                        }
-                        else
-                        {
-                            removeRows.Add(row);
-                        }
-
-                        toolStripProgressBar1.ProgressBar.Invoke((MethodInvoker)delegate {
-                            toolStripProgressBar1.Value++;
-                        });
-                    }
-
-                    if (syncType == SyncTypes.ChangesAddRemove || syncType == SyncTypes.ChangesRemove || syncType == SyncTypes.AddRemove || syncType == SyncTypes.Remove)
-                    {
-                        //toolStripStatusLabelStatus.Text = "Removing files from view";
-
-                        this.Invoke((MethodInvoker)delegate {
-                            toolStripStatusLabelStatus.Text = "Removing files from view";
-                        });
-
-                        toolStripProgressBar1.ProgressBar.Invoke((MethodInvoker)delegate {
-                            toolStripProgressBar1.Value = 0;
-                            toolStripProgressBar1.Maximum = removeRows.Count;
-                        });
-
-                        foreach (var rowToRemove in removeRows)
-                        {
-                            datatable.Rows.Remove(rowToRemove);
-
-                            toolStripProgressBar1.ProgressBar.Invoke((MethodInvoker)delegate {
-                                toolStripProgressBar1.Value++;
-                            });
-                        }
-                    }
-
-                    // Add slow add bad way to add new files to datatable
-                    if (syncType == SyncTypes.ChangesAddRemove || syncType == SyncTypes.ChangesAdd || syncType == SyncTypes.AddRemove || syncType == SyncTypes.Add)
-                    {
-                        toolStripProgressBar1.ProgressBar.Invoke((MethodInvoker)delegate {
-                            toolStripProgressBar1.Value = 0;
-                            toolStripProgressBar1.Maximum = foldersAndFilesToCheckForMoreFiles.Count;
-                        });
-
-                        foreach (var folder in foldersAndFilesToCheckForMoreFiles)
-                        {
-                            this.Invoke((MethodInvoker)delegate {
-                                toolStripStatusLabelStatus.Text = "Add files to view from folder: " + folder.Key;
-                            });
-                            
-                            var folderFiles = Directory.GetFiles(folder.Key, "*.DBX", SearchOption.AllDirectories).ToList();
-
-                            foreach (var file in folder.Value)
-                            {
-                                if (folderFiles.Contains(file))
-                                    folderFiles.Remove(file);
-                            }
-
-                            foreach (var file in folderFiles)
-                            {
-                                var newRowDict = await GetMetaDataAsync(file);
-
-                                if (newRowDict.Count > 0)
-                                {
-                                    var row = datatable.NewRow();
-
-                                    foreach (var kv in newRowDict)
-                                    {
-                                        if (datatable.Columns.Contains(kv.Key))
-                                            row[kv.Key] = kv.Value;
+                                        datatable.Rows.Add(row);
                                     }
-
-                                    datatable.Rows.Add(row);
                                 }
-                            }
 
-                            toolStripProgressBar1.ProgressBar.Invoke((MethodInvoker)delegate {
-                                toolStripProgressBar1.Value++;
-                            });
+                                toolStripProgressBar1.ProgressBar.Invoke((MethodInvoker)delegate {
+                                    toolStripProgressBar1.Value++;
+                                });
+                            }
                         }
+                    }, token);
+                    
+                    try
+                    {
+                        syncTask.Wait();
+                    }
+                    catch (AggregateException e)
+                    {
+                        this.Invoke((MethodInvoker)delegate {
+                            toolStripStatusLabelStatus.Text = "Sync cancel";
+                        });
+                    }
+                    finally
+                    {
+                        tokenSource.Dispose();
                     }
                 });
 
@@ -586,7 +623,13 @@ namespace Diggidag
             if(!Enum.TryParse<SyncTypes>((sender as ToolStripMenuItem).Tag as string, out var syncType))
                 syncType = SyncTypes.ChangesAddRemove;
 
+            cancelCurrentSyncToolStripMenuItem.Enabled = true;
+            syncCurrentViewToolStripMenuItem.Enabled = false;
+
             await SyncFoldersInCurrentDataViewAsync(senderGridView ?? dataGridView1, syncType);
+
+            cancelCurrentSyncToolStripMenuItem.Enabled = false;
+            syncCurrentViewToolStripMenuItem.Enabled = true;
         }
 
         private void clearToolStripMenuItem_Click(object sender, EventArgs e)
@@ -611,6 +654,16 @@ namespace Diggidag
             if (toolStripSpringTextBox1.Text.Equals(defaultFilterTextBoxText))
             {
                 toolStripSpringTextBox1.Text = string.Empty;
+            }
+        }
+
+        private void cancelCurrentSyncToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var res = MessageBox.Show("Are you sure you want to cancel current sync?", "Cancel Current Sync", MessageBoxButtons.YesNo);
+
+            if(res == DialogResult.Yes)
+            {
+                tokenSource.Cancel(true);
             }
         }
     }
