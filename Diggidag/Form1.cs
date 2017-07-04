@@ -99,6 +99,10 @@ namespace Diggidag
 
             if (datatable != null && sourceColumnIndex.HasValue && fileLastWriteTimeIndex.HasValue)
             {
+                var rollbackDatatable = datatable.Copy();
+
+                var newfilesdatatable = new DataTable();
+
                 var removeRows = new List<DataRow>();
                 var foldersAndFilesToCheckForMoreFiles = new Dictionary<string, List<string>>();
 
@@ -118,11 +122,12 @@ namespace Diggidag
 
                 await Task.Run(() => {                    
                     
-                    var syncTask = Task.Factory.StartNew(async () => {
+                    var syncTask = Task.Run(async () => {
+                        
                         this.Invoke((MethodInvoker)delegate {
                             toolStripStatusLabelStatus.Text = "Syncing changes in view";
                         });
-
+                        
                         toolStripProgressBar1.ProgressBar.Invoke((MethodInvoker)delegate {
                             toolStripProgressBar1.Value = 0;
                             toolStripProgressBar1.Maximum = datatable.Rows.Count;
@@ -144,11 +149,13 @@ namespace Diggidag
                                         var newRowDict = await GetMetaDataAsync(sourceFile);
 
                                         if (newRowDict.Count > 0)
+                                        {
                                             foreach (var kv in newRowDict)
                                             {
                                                 if (datatable.Columns.Contains(kv.Key))
                                                     row[kv.Key] = kv.Value;
                                             }
+                                        }
                                     }
                                 }
 
@@ -195,41 +202,60 @@ namespace Diggidag
                         {
                             toolStripProgressBar1.ProgressBar.Invoke((MethodInvoker)delegate {
                                 toolStripProgressBar1.Value = 0;
-                                toolStripProgressBar1.Maximum = foldersAndFilesToCheckForMoreFiles.Count;
                             });
+
+                            var allFilesInAllDirectories = new HashSet<string>();
 
                             foreach (var folder in foldersAndFilesToCheckForMoreFiles)
                             {
-                                this.Invoke((MethodInvoker)delegate {
-                                    toolStripStatusLabelStatus.Text = "Add files to view from folder: " + folder.Key;
-                                });
-                            
-                                var folderFiles = Directory.GetFiles(folder.Key, "*.DBX", SearchOption.AllDirectories).ToList();
+                                token.ThrowIfCancellationRequested();
 
-                                foreach (var file in folder.Value)
+                                
+                                this.Invoke((MethodInvoker)delegate {
+                                    toolStripStatusLabelStatus.Text = "Checking for new files in folder: " + folder.Key;
+                                });
+                               
+
+                                var files = Directory.GetFiles(folder.Key, "*.DBX", SearchOption.AllDirectories);
+
+                                foreach(var file in files)
                                 {
-                                    if (folderFiles.Contains(file))
-                                        folderFiles.Remove(file);
+                                    allFilesInAllDirectories.Add(file);
                                 }
 
-                                foreach (var file in folderFiles)
+                                foreach(var file in folder.Value)
                                 {
-                                    token.ThrowIfCancellationRequested();
+                                    allFilesInAllDirectories.Remove(file);
+                                }
+                            }
 
-                                    var newRowDict = await GetMetaDataAsync(file);
+                            toolStripProgressBar1.ProgressBar.Invoke((MethodInvoker)delegate {
+                                toolStripProgressBar1.Maximum = allFilesInAllDirectories.Count;
+                            });
 
-                                    if (newRowDict.Count > 0)
+                            
+                            this.Invoke((MethodInvoker)delegate {
+                                toolStripStatusLabelStatus.Text = "Adding new files to view";
+                            });
+                            
+
+                            foreach (var file in allFilesInAllDirectories)
+                            {                            
+                                token.ThrowIfCancellationRequested();
+
+                                var newRowDict = await GetMetaDataAsync(file);
+
+                                if (newRowDict.Count > 0)
+                                {
+                                    var row = datatable.NewRow();
+
+                                    foreach (var kv in newRowDict)
                                     {
-                                        var row = datatable.NewRow();
-
-                                        foreach (var kv in newRowDict)
-                                        {
-                                            if (datatable.Columns.Contains(kv.Key))
-                                                row[kv.Key] = kv.Value;
-                                        }
-
-                                        datatable.Rows.Add(row);
+                                        if (datatable.Columns.Contains(kv.Key))
+                                            row[kv.Key] = kv.Value;
                                     }
+
+                                    datatable.Rows.Add(row);
                                 }
 
                                 toolStripProgressBar1.ProgressBar.Invoke((MethodInvoker)delegate {
@@ -245,15 +271,24 @@ namespace Diggidag
                     }
                     catch (AggregateException e)
                     {
+                        /*
                         this.Invoke((MethodInvoker)delegate {
-                            toolStripStatusLabelStatus.Text = "Sync cancel";
+                            toolStripStatusLabelStatus.Text = "Sync canceled";
                         });
-                    }
-                    finally
-                    {
-                        tokenSource.Dispose();
+                        */
                     }
                 });
+
+                if(token.IsCancellationRequested)
+                {
+                    if (MessageBox.Show("Sync was canceled, do you want to rollback your data view?", "Rollback Data view", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                    {
+                        datatable.Clear();
+                        datatable.Load(rollbackDatatable.CreateDataReader());
+                    }
+                }
+
+                tokenSource.Dispose();
 
                 var src = datagridview.DataSource;
                 datagridview.DataSource = null;
