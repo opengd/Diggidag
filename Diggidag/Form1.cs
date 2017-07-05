@@ -97,14 +97,14 @@ namespace Diggidag
             var sourceColumnIndex = datagridview.Columns["Source"]?.Index;
             var fileLastWriteTimeIndex = datagridview.Columns["File Last Write Time"]?.Index;
 
+            var currentBindingSource = datagridview.DataSource as BindingSource;
+            datagridview.DataSource = null;
+
             if (datatable != null && sourceColumnIndex.HasValue && fileLastWriteTimeIndex.HasValue)
             {
                 var rollbackDatatable = datatable.Copy();
 
-                var newfilesdatatable = new DataTable();
-
-                var removeRows = new List<DataRow>();
-                var foldersAndFilesToCheckForMoreFiles = new Dictionary<string, List<string>>();
+                var editDatatable = datatable.Clone();
 
                 tokenSource = new CancellationTokenSource();
                 var token = tokenSource.Token;
@@ -133,20 +133,39 @@ namespace Diggidag
                             toolStripProgressBar1.Maximum = datatable.Rows.Count;
                         });
 
-                        foreach (DataRow row in datatable.Rows)
-                        {
-                            token.ThrowIfCancellationRequested();
+                        List<int> removeRows = new List<int>();
 
-                            var sourceFile = row[sourceColumnIndex.Value] as string;
+                        var allSourceFiles = new Dictionary<int,string>();
+
+                        HashSet<string> allFoldersInSource = new HashSet<string>();
+
+                        for(int i = 0; i < datatable.Rows.Count; i++)
+                        {
+                            var sourceFile = datatable.Rows[i][sourceColumnIndex.Value] as string;
                             if (File.Exists(sourceFile))
                             {
-                                if (DateTime.TryParse(row[fileLastWriteTimeIndex.Value] as string, out var currentSourceWriteTime) && (syncType == SyncTypes.ChangesAddRemove || syncType == SyncTypes.ChangesAdd || syncType == SyncTypes.ChangesRemove || syncType == SyncTypes.Changes))
+                                allSourceFiles.Add(i, sourceFile);
+                                editDatatable.LoadDataRow(datatable.Rows[i].ItemArray, LoadOption.OverwriteChanges);
+                            }
+
+                            allFoldersInSource.Add(Path.GetDirectoryName(sourceFile));
+                        }
+
+                        if ((syncType == SyncTypes.ChangesAddRemove || syncType == SyncTypes.ChangesAdd || syncType == SyncTypes.ChangesRemove || syncType == SyncTypes.Changes))
+                        {
+                            foreach(DataRow row in editDatatable.Rows)
+                            {
+                                token.ThrowIfCancellationRequested();
+
+                                var sourceFile = row[sourceColumnIndex.Value] as string;
+
+                                if (DateTime.TryParse(row[fileLastWriteTimeIndex.Value] as string, out var currentSourceWriteTime))
                                 {
                                     var fi = new FileInfo(sourceFile);
 
                                     if (DateTime.TryParse(fi.LastWriteTime.ToString(), out var lastWriteTime) && lastWriteTime > currentSourceWriteTime)
                                     {
-                                        var newRowDict = await GetMetaDataAsync(sourceFile);
+                                        var newRowDict = await GetMetaDataAsync(sourceFile, fi);
 
                                         if (newRowDict.Count > 0)
                                         {
@@ -159,19 +178,11 @@ namespace Diggidag
                                     }
                                 }
 
-                                if (!foldersAndFilesToCheckForMoreFiles.ContainsKey(Path.GetDirectoryName(sourceFile)))
-                                    foldersAndFilesToCheckForMoreFiles.Add(Path.GetDirectoryName(sourceFile), new List<string>());
-
-                                foldersAndFilesToCheckForMoreFiles[Path.GetDirectoryName(sourceFile)].Add(sourceFile);
+                                toolStripProgressBar1.ProgressBar.Invoke((MethodInvoker)delegate
+                                {
+                                    toolStripProgressBar1.Value++;
+                                });
                             }
-                            else
-                            {
-                                removeRows.Add(row);
-                            }
-
-                            toolStripProgressBar1.ProgressBar.Invoke((MethodInvoker)delegate {
-                                toolStripProgressBar1.Value++;
-                            });
                         }
 
                         if (syncType == SyncTypes.ChangesAddRemove || syncType == SyncTypes.ChangesRemove || syncType == SyncTypes.AddRemove || syncType == SyncTypes.Remove)
@@ -185,16 +196,8 @@ namespace Diggidag
                                 toolStripProgressBar1.Maximum = removeRows.Count;
                             });
 
-                            foreach (var rowToRemove in removeRows)
-                            {
-                                token.ThrowIfCancellationRequested();
-
-                                datatable.Rows.Remove(rowToRemove);
-
-                                toolStripProgressBar1.ProgressBar.Invoke((MethodInvoker)delegate {
-                                    toolStripProgressBar1.Value++;
-                                });
-                            }
+                            datatable.Clear();
+                            datatable.Load(editDatatable.CreateDataReader());
                         }
 
                         // Add slow add bad way to add new files to datatable
@@ -206,39 +209,34 @@ namespace Diggidag
 
                             var allFilesInAllDirectories = new HashSet<string>();
 
-                            foreach (var folder in foldersAndFilesToCheckForMoreFiles)
+                            foreach (var folder in allFoldersInSource)
                             {
                                 token.ThrowIfCancellationRequested();
-
                                 
                                 this.Invoke((MethodInvoker)delegate {
-                                    toolStripStatusLabelStatus.Text = "Checking for new files in folder: " + folder.Key;
+                                    toolStripStatusLabelStatus.Text = "Checking for new files in folder: " + folder;
                                 });
                                
-
-                                var files = Directory.GetFiles(folder.Key, "*.DBX", SearchOption.AllDirectories);
+                                var files = Directory.GetFiles(folder, "*.DBX", SearchOption.AllDirectories);
 
                                 foreach(var file in files)
                                 {
                                     allFilesInAllDirectories.Add(file);
                                 }
-
-                                foreach(var file in folder.Value)
-                                {
-                                    allFilesInAllDirectories.Remove(file);
-                                }
                             }
+
+                            if(allSourceFiles.Count > 0)
+                                foreach(var file in allSourceFiles.Values)
+                                    allFilesInAllDirectories.Remove(file);
 
                             toolStripProgressBar1.ProgressBar.Invoke((MethodInvoker)delegate {
                                 toolStripProgressBar1.Maximum = allFilesInAllDirectories.Count;
                             });
-
                             
                             this.Invoke((MethodInvoker)delegate {
                                 toolStripStatusLabelStatus.Text = "Adding new files to view";
                             });
                             
-
                             foreach (var file in allFilesInAllDirectories)
                             {                            
                                 token.ThrowIfCancellationRequested();
@@ -290,9 +288,7 @@ namespace Diggidag
 
                 tokenSource.Dispose();
 
-                var src = datagridview.DataSource;
-                datagridview.DataSource = null;
-                datagridview.DataSource = src;
+                datagridview.DataSource = currentBindingSource;
 
                 AfterDataImport(datagridview);
             }
@@ -472,7 +468,7 @@ namespace Diggidag
             return dataList;
         }
 
-        private async Task<Dictionary<string, string>> GetMetaDataAsync(string dbxFile)
+        private async Task<Dictionary<string, string>> GetMetaDataAsync(string dbxFile, FileInfo fi = null)
         {
             var dataRow = new Dictionary<string, string>();
 
@@ -492,7 +488,8 @@ namespace Diggidag
 
                     dataRow["Source"] = dbxFile;
 
-                    var fi = new FileInfo(dbxFile);
+                    if(fi == null)
+                        fi = new FileInfo(dbxFile);
 
                     dataRow["File Last Write Time"] = fi.LastWriteTime.ToString();
                     dataRow["File Creation Time"] = fi.CreationTime.ToString();
