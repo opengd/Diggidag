@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.13
+VisualStudioVersion = 15.0.26430.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Diggidag", "Diggidag\Diggidag.csproj", "{B1C9AE3C-866C-45B9-B086-68C5DFBADC2F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiggidagWpf", "DiggidagWpf\DiggidagWpf.csproj", "{C06B752A-AC28-43C5-B9B1-9FFC73D0EB01}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{B1C9AE3C-866C-45B9-B086-68C5DFBADC2F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B1C9AE3C-866C-45B9-B086-68C5DFBADC2F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B1C9AE3C-866C-45B9-B086-68C5DFBADC2F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C06B752A-AC28-43C5-B9B1-9FFC73D0EB01}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C06B752A-AC28-43C5-B9B1-9FFC73D0EB01}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C06B752A-AC28-43C5-B9B1-9FFC73D0EB01}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C06B752A-AC28-43C5-B9B1-9FFC73D0EB01}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

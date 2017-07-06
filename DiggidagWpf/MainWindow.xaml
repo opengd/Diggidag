@@ -1,0 +1,22 @@
+﻿<Window x:Class="DiggidagWpf.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:DiggidagWpf"
+        mc:Ignorable="d"
+        Title="Diggidag" Height="350" Width="525">
+    <Grid>
+        <ToolBarTray Height="24" VerticalAlignment="Top" Width="auto">
+            <ToolBar HorizontalAlignment="Left" Height="24" VerticalAlignment="Top" Width="auto">
+                <Menu Height="20" VerticalAlignment="Top" Width="100">
+                    <MenuItem Header="File" Margin="0">
+                        <MenuItem Header="Exit"></MenuItem>
+                    </MenuItem>
+                </Menu>
+            </ToolBar>
+        </ToolBarTray>
+        <DataGrid Margin="0,24" AllowDrop="True" Drop="DataGrid_Drop" DragEnter="DataGrid_DragEnter" Name="myDataGrid" SelectionMode="Single"/>
+        <StatusBar Margin="0" VerticalAlignment="Bottom" Height="24"/>
+    </Grid>
+</Window>

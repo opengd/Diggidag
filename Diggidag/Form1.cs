@@ -109,19 +109,6 @@ namespace Diggidag
                 tokenSource = new CancellationTokenSource();
                 var token = tokenSource.Token;
 
-                var gittest = 0;
-
-                /*
-                var syncTask = Task.Run(async () => {
-                    while (!token.IsCancellationRequested)
-                    {
-                        await Task.Delay(100);
-                    }
-
-                    token.ThrowIfCancellationRequested();
-                }, token);
-                */
-
                 await Task.Run(() => {                    
                     
                     var syncTask = Task.Run(async () => {
