@@ -30,6 +30,7 @@ namespace Diggidag
             InitializeComponent();
 
             ImportConfigFile();
+            CheckForConfigErrors();
 
             tokenSource = new CancellationTokenSource();
 
@@ -758,6 +759,27 @@ namespace Diggidag
         private void exportConfigFileToolStripMenuItem_Click(object sender, EventArgs e)
         {
             ExportConfigFile();
+        }
+
+        public void CheckForConfigErrors()
+        {
+            while (currentConfig.importXMLTags.Length > currentConfig.columnNames.Length)
+            {
+                var cl = currentConfig.columnNames.ToList();
+                cl.Add(currentConfig.importXMLTags[currentConfig.columnNames.Length]);
+
+                currentConfig.columnNames = cl.ToArray();
+            }
+
+            HashSet<string> dubTest = new HashSet<string>();
+
+            foreach(var name in currentConfig.columnNames)
+            {
+                if (!dubTest.Add(name))
+                    dubTest.Add(name + dubTest.Count);
+            }
+
+            currentConfig.columnNames = dubTest.ToArray();
         }
     }
 
