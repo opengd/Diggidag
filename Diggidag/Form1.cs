@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml;
 using System.Linq;
+using System.Runtime.Serialization.Json;
 
 namespace Diggidag
 {
@@ -15,14 +16,9 @@ namespace Diggidag
     {
         //int totalDataRows;
 
+        DiggidagConfig currentConfig;
+
         CancellationTokenSource tokenSource;
-
-        string[] dbxMetaTags = new string[] 
-        {
-            "TITLE", "FILENAME", "CREATOR", "LENGTH"
-        };
-
-        string defaultFilterTextBoxText = "Your filter text...";
 
         enum SyncTypes
         {
@@ -33,7 +29,11 @@ namespace Diggidag
         {
             InitializeComponent();
 
+            ImportConfigFile();
+
             tokenSource = new CancellationTokenSource();
+
+            toolStripSpringTextBox1.Text = currentConfig.defaultFilterTextBoxText;
 
             BeforeDataImport();
         }
@@ -467,11 +467,12 @@ namespace Diggidag
                 {
                     using (var reader = XmlReader.Create(dbxFile))
                     {
-                        foreach (var tag in dbxMetaTags)
+                        for(var i = 0; i < currentConfig.importXMLTags.Length; i++)
+                        //foreach (var tag in dbxMetaTags)
                         {
-                            reader.ReadToFollowing(tag);
+                            reader.ReadToFollowing(currentConfig.importXMLTags[i]);
                             if (reader.NodeType != XmlNodeType.None)
-                                dataRow[tag] = reader.ReadElementContentAsString();
+                                dataRow[currentConfig.columnNames[i]] = reader.ReadElementContentAsString();
                         }
                     }
 
@@ -499,7 +500,7 @@ namespace Diggidag
 
         private void toolStripSpringTextBox1_TextChanged(object sender, EventArgs e)
         {
-            if (!string.IsNullOrEmpty(toolStripSpringTextBox1.Text) && !toolStripSpringTextBox1.Text.Equals(defaultFilterTextBoxText))
+            if (!string.IsNullOrEmpty(toolStripSpringTextBox1.Text) && !toolStripSpringTextBox1.Text.Equals(currentConfig.defaultFilterTextBoxText))
             {
                 if (!string.IsNullOrEmpty((string)toolStripComboBoxFilterTypes.SelectedItem))
                     bindingSource1.Filter = "[" + (string)toolStripComboBoxFilterTypes.SelectedItem + "]" + " like '*" + toolStripSpringTextBox1.Text + "*'";
@@ -515,13 +516,13 @@ namespace Diggidag
                     }
                 }
             }
-            else if (!toolStripSpringTextBox1.Text.Equals(defaultFilterTextBoxText))
+            else if (!toolStripSpringTextBox1.Text.Equals(currentConfig.defaultFilterTextBoxText))
             {
                 bindingSource1.Filter = null;
-                toolStripStatusLabelRows.Text = "Your filter text...";
+                toolStripStatusLabelRows.Text = currentConfig.defaultFilterTextBoxText;
             }
 
-            toolStripStatusLabelRows.Text = !toolStripSpringTextBox1.Text.Equals(defaultFilterTextBoxText) ? bindingSource1.Count.ToString() : string.Empty;
+            toolStripStatusLabelRows.Text = !toolStripSpringTextBox1.Text.Equals(currentConfig.defaultFilterTextBoxText) ? bindingSource1.Count.ToString() : string.Empty;
         }
 
         private void dataGridView1_SelectionChanged(object sender, EventArgs e)
@@ -598,14 +599,14 @@ namespace Diggidag
 
         private void dataGridView1_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
-            OpenFileInDefaultApplication(dataGridView1.Rows[e.RowIndex].Cells[dataGridView1.Columns["FILENAME"].Index].Value as string);
+            OpenFileInDefaultApplication(dataGridView1.Rows[e.RowIndex].Cells[dataGridView1.Columns[currentConfig.mediaColumns.First()].Index].Value as string);
         }
 
         private void playMediaFileToolStripMenuItem_Click(object sender, EventArgs e)
         {
             foreach (DataGridViewRow row in dataGridView1.SelectedRows)
             {
-                OpenFileInDefaultApplication(row.Cells[dataGridView1.Columns["FILENAME"].Index].Value as string);
+                OpenFileInDefaultApplication(row.Cells[dataGridView1.Columns[currentConfig.mediaColumns.First()].Index].Value as string);
             }
         }
 
@@ -666,13 +667,13 @@ namespace Diggidag
         {
             if (string.IsNullOrEmpty(toolStripSpringTextBox1.Text))
             {
-                toolStripSpringTextBox1.Text = defaultFilterTextBoxText;
+                toolStripSpringTextBox1.Text = currentConfig.defaultFilterTextBoxText;
             }
         }
 
         private void toolStripSpringTextBox1_Enter(object sender, EventArgs e)
         {
-            if (toolStripSpringTextBox1.Text.Equals(defaultFilterTextBoxText))
+            if (toolStripSpringTextBox1.Text.Equals(currentConfig.defaultFilterTextBoxText))
             {
                 toolStripSpringTextBox1.Text = string.Empty;
             }
@@ -695,7 +696,7 @@ namespace Diggidag
                 string path = string.Empty;
                 try
                 {
-                    path = Path.GetDirectoryName(@row.Cells[dataGridView1.Columns["FILENAME"].Index].Value as string);
+                    path = Path.GetDirectoryName(@row.Cells[dataGridView1.Columns[currentConfig.mediaColumns.First()].Index].Value as string);
                     if (Directory.Exists(path))
                         System.Diagnostics.Process.Start("explorer.exe", path);
                     else
@@ -706,6 +707,57 @@ namespace Diggidag
                     MessageBox.Show(ex.Message);
                 }
             }
+        }
+
+        private void ExportConfigFile()
+        {
+            var serializer = new DataContractJsonSerializer(typeof(DiggidagConfig));
+
+            FileStream file = null;
+
+            try
+            {
+                file = File.Open("config.json", FileMode.Create);
+
+                if (currentConfig == null)
+                    currentConfig = new DiggidagConfig();
+
+                serializer.WriteObject(file, currentConfig);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Problem writing config file.\n" + ex.Message);
+            }
+            finally
+            {
+                if (file != null) file.Close();
+            }
+        }
+
+        private void ImportConfigFile()
+        {
+            var serializer = new DataContractJsonSerializer(typeof(DiggidagConfig));
+
+            FileStream file = null;
+
+            try
+            {
+                file = File.Open("config.json", FileMode.Open);
+                currentConfig = serializer.ReadObject(file) as DiggidagConfig;
+            }
+            catch (Exception ex)
+            {
+                currentConfig = new DiggidagConfig();
+            }
+            finally
+            {
+                if (file != null) file.Close();
+            }
+        }
+
+        private void exportConfigFileToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ExportConfigFile();
         }
     }
 

@@ -40,6 +40,8 @@
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
             this.contextMenuStripGridView = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.playMediaFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.openMediaLocationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.openDBXFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openFileLocationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripTop = new System.Windows.Forms.ToolStrip();
@@ -63,6 +65,8 @@
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.clearToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
+            this.exportConfigFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator8 = new System.Windows.Forms.ToolStripSeparator();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripSpringTextBox1 = new Diggidag.ToolStripSpringTextBox();
@@ -70,8 +74,6 @@
             this.toolStripComboBoxFilterTypes = new System.Windows.Forms.ToolStripComboBox();
             this.dataSet1 = new System.Data.DataSet();
             this.bindingSource1 = new System.Windows.Forms.BindingSource(this.components);
-            this.openMediaLocationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripContainer1.BottomToolStripPanel.SuspendLayout();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.TopToolStripPanel.SuspendLayout();
@@ -184,7 +186,7 @@
             this.openDBXFileToolStripMenuItem,
             this.openFileLocationToolStripMenuItem});
             this.contextMenuStripGridView.Name = "contextMenuStripGridView";
-            this.contextMenuStripGridView.Size = new System.Drawing.Size(343, 198);
+            this.contextMenuStripGridView.Size = new System.Drawing.Size(343, 154);
             // 
             // playMediaFileToolStripMenuItem
             // 
@@ -192,6 +194,18 @@
             this.playMediaFileToolStripMenuItem.Size = new System.Drawing.Size(342, 36);
             this.playMediaFileToolStripMenuItem.Text = "Play Media File";
             this.playMediaFileToolStripMenuItem.Click += new System.EventHandler(this.playMediaFileToolStripMenuItem_Click);
+            // 
+            // openMediaLocationToolStripMenuItem
+            // 
+            this.openMediaLocationToolStripMenuItem.Name = "openMediaLocationToolStripMenuItem";
+            this.openMediaLocationToolStripMenuItem.Size = new System.Drawing.Size(342, 36);
+            this.openMediaLocationToolStripMenuItem.Text = "Open Media Location";
+            this.openMediaLocationToolStripMenuItem.Click += new System.EventHandler(this.openMediaLocationToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator4
+            // 
+            this.toolStripSeparator4.Name = "toolStripSeparator4";
+            this.toolStripSeparator4.Size = new System.Drawing.Size(339, 6);
             // 
             // openDBXFileToolStripMenuItem
             // 
@@ -238,6 +252,8 @@
             this.toolStripSeparator1,
             this.clearToolStripMenuItem,
             this.toolStripSeparator5,
+            this.exportConfigFileToolStripMenuItem,
+            this.toolStripSeparator8,
             this.exitToolStripMenuItem});
             this.toolStripButton1.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButton1.Image")));
             this.toolStripButton1.ImageTransparentColor = System.Drawing.Color.Magenta;
@@ -388,6 +404,18 @@
             this.toolStripSeparator5.Name = "toolStripSeparator5";
             this.toolStripSeparator5.Size = new System.Drawing.Size(325, 6);
             // 
+            // exportConfigFileToolStripMenuItem
+            // 
+            this.exportConfigFileToolStripMenuItem.Name = "exportConfigFileToolStripMenuItem";
+            this.exportConfigFileToolStripMenuItem.Size = new System.Drawing.Size(328, 38);
+            this.exportConfigFileToolStripMenuItem.Text = "Export Config File";
+            this.exportConfigFileToolStripMenuItem.Click += new System.EventHandler(this.exportConfigFileToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator8
+            // 
+            this.toolStripSeparator8.Name = "toolStripSeparator8";
+            this.toolStripSeparator8.Size = new System.Drawing.Size(325, 6);
+            // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
@@ -426,18 +454,6 @@
             // dataSet1
             // 
             this.dataSet1.DataSetName = "NewDataSet";
-            // 
-            // openMediaLocationToolStripMenuItem
-            // 
-            this.openMediaLocationToolStripMenuItem.Name = "openMediaLocationToolStripMenuItem";
-            this.openMediaLocationToolStripMenuItem.Size = new System.Drawing.Size(342, 36);
-            this.openMediaLocationToolStripMenuItem.Text = "Open Media Location";
-            this.openMediaLocationToolStripMenuItem.Click += new System.EventHandler(this.openMediaLocationToolStripMenuItem_Click);
-            // 
-            // toolStripSeparator4
-            // 
-            this.toolStripSeparator4.Name = "toolStripSeparator4";
-            this.toolStripSeparator4.Size = new System.Drawing.Size(339, 6);
             // 
             // Form1
             // 
@@ -511,6 +527,8 @@
         private System.Windows.Forms.ToolStripMenuItem cancelCurrentSyncToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem openMediaLocationToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
+        private System.Windows.Forms.ToolStripMenuItem exportConfigFileToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator8;
     }
 }
 
