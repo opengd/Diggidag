@@ -11,6 +11,7 @@
             <ToolBar HorizontalAlignment="Left" Height="24" VerticalAlignment="Top" Width="auto">
                 <Menu Height="20" VerticalAlignment="Top" Width="100">
                     <MenuItem Header="File" Margin="0">
+                        <MenuItem x:Name="ExportConfigFileMenuItem" Header="Export Config File" Click="ExportConfigFileMenuItem_Click"></MenuItem>
                         <MenuItem Header="Exit"></MenuItem>
                     </MenuItem>
                 </Menu>

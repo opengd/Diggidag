@@ -1,10 +1,19 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-//using System.Runtime.Serialization.Json;
+using System.Runtime.Serialization.Json;
+using System;
+using System.IO;
 
 namespace DiggidagWpf
 {
+    [Serializable]
+    public class DiggidagConfig
+    {
+        public string tablename = string.Empty;
+        public string[] import_columns = new string[] {"hep", "hop", "hip", "hap"};
+    }
+
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
@@ -15,6 +24,8 @@ namespace DiggidagWpf
             public string File { get; set; }
         }
 
+        DiggidagConfig myconfig;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -24,8 +35,6 @@ namespace DiggidagWpf
             textColumn.Header = "File";
             textColumn.Binding = new Binding("File");
             myDataGrid.Columns.Add(textColumn);
-
-            //JavaScriptSerializer serializer = new JavaScriptSerializer();
         }
 
         private void DataGrid_Drop(object sender, DragEventArgs e)
@@ -47,6 +56,60 @@ namespace DiggidagWpf
                 e.Effects = DragDropEffects.Copy;
             else
                 e.Effects = DragDropEffects.None;
+        }
+
+        private void ExportConfigFile()
+        {
+            var serializer = new DataContractJsonSerializer(typeof(DiggidagConfig));
+
+            FileStream file = null;
+
+            try
+            {
+                file = File.Open("config.json", FileMode.Create);
+
+                if (myconfig == null)
+                    myconfig = new DiggidagConfig();
+
+                myconfig.tablename = "Hej hop " + DateTime.Now;
+
+                serializer.WriteObject(file, myconfig);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Problem writing config file.\n" + ex.Message);
+            }
+            finally
+            {
+                if (file != null) file.Close();
+            }
+        }
+
+        private void ImportConfigFile()
+        {
+            var serializer = new DataContractJsonSerializer(typeof(DiggidagConfig));
+
+            FileStream file = null;
+
+            try
+            {
+                file = File.Open("config.json", FileMode.Open);
+                myconfig = serializer.ReadObject(file) as DiggidagConfig;
+            }
+            catch (Exception ex)
+            {
+                myconfig = new DiggidagConfig();
+            }
+            finally
+            {
+                if (file != null) file.Close();
+            }
+        }
+
+        private void ExportConfigFileMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            ExportConfigFile();
+            //ImportConfigFile();
         }
     }
 }

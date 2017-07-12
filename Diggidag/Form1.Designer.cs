@@ -59,6 +59,7 @@
             this.changesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.addToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.removeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.cancelCurrentSyncToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.clearToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
@@ -69,7 +70,8 @@
             this.toolStripComboBoxFilterTypes = new System.Windows.Forms.ToolStripComboBox();
             this.dataSet1 = new System.Data.DataSet();
             this.bindingSource1 = new System.Windows.Forms.BindingSource(this.components);
-            this.cancelCurrentSyncToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.openMediaLocationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripContainer1.BottomToolStripPanel.SuspendLayout();
             this.toolStripContainer1.ContentPanel.SuspendLayout();
             this.toolStripContainer1.TopToolStripPanel.SuspendLayout();
@@ -177,30 +179,32 @@
             this.contextMenuStripGridView.ImageScalingSize = new System.Drawing.Size(32, 32);
             this.contextMenuStripGridView.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.playMediaFileToolStripMenuItem,
+            this.openMediaLocationToolStripMenuItem,
+            this.toolStripSeparator4,
             this.openDBXFileToolStripMenuItem,
             this.openFileLocationToolStripMenuItem});
             this.contextMenuStripGridView.Name = "contextMenuStripGridView";
-            this.contextMenuStripGridView.Size = new System.Drawing.Size(291, 156);
+            this.contextMenuStripGridView.Size = new System.Drawing.Size(343, 198);
             // 
             // playMediaFileToolStripMenuItem
             // 
             this.playMediaFileToolStripMenuItem.Name = "playMediaFileToolStripMenuItem";
-            this.playMediaFileToolStripMenuItem.Size = new System.Drawing.Size(290, 36);
+            this.playMediaFileToolStripMenuItem.Size = new System.Drawing.Size(342, 36);
             this.playMediaFileToolStripMenuItem.Text = "Play Media File";
             this.playMediaFileToolStripMenuItem.Click += new System.EventHandler(this.playMediaFileToolStripMenuItem_Click);
             // 
             // openDBXFileToolStripMenuItem
             // 
             this.openDBXFileToolStripMenuItem.Name = "openDBXFileToolStripMenuItem";
-            this.openDBXFileToolStripMenuItem.Size = new System.Drawing.Size(290, 36);
+            this.openDBXFileToolStripMenuItem.Size = new System.Drawing.Size(342, 36);
             this.openDBXFileToolStripMenuItem.Text = "Open DBX File";
             this.openDBXFileToolStripMenuItem.Click += new System.EventHandler(this.openDBXFileToolStripMenuItem_Click);
             // 
             // openFileLocationToolStripMenuItem
             // 
             this.openFileLocationToolStripMenuItem.Name = "openFileLocationToolStripMenuItem";
-            this.openFileLocationToolStripMenuItem.Size = new System.Drawing.Size(290, 36);
-            this.openFileLocationToolStripMenuItem.Text = "Open File Location";
+            this.openFileLocationToolStripMenuItem.Size = new System.Drawing.Size(342, 36);
+            this.openFileLocationToolStripMenuItem.Text = "Open DBX File Location";
             this.openFileLocationToolStripMenuItem.Click += new System.EventHandler(this.openFileLocationToolStripMenuItem_Click);
             // 
             // toolStripTop
@@ -359,6 +363,14 @@
             this.removeToolStripMenuItem.Text = "Remove";
             this.removeToolStripMenuItem.Click += new System.EventHandler(this.syncCurrentViewToolStripMenuItem_Click);
             // 
+            // cancelCurrentSyncToolStripMenuItem
+            // 
+            this.cancelCurrentSyncToolStripMenuItem.Enabled = false;
+            this.cancelCurrentSyncToolStripMenuItem.Name = "cancelCurrentSyncToolStripMenuItem";
+            this.cancelCurrentSyncToolStripMenuItem.Size = new System.Drawing.Size(328, 38);
+            this.cancelCurrentSyncToolStripMenuItem.Text = "Cancel Current Sync";
+            this.cancelCurrentSyncToolStripMenuItem.Click += new System.EventHandler(this.cancelCurrentSyncToolStripMenuItem_Click);
+            // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
@@ -415,13 +427,17 @@
             // 
             this.dataSet1.DataSetName = "NewDataSet";
             // 
-            // cancelCurrentSyncToolStripMenuItem
+            // openMediaLocationToolStripMenuItem
             // 
-            this.cancelCurrentSyncToolStripMenuItem.Enabled = false;
-            this.cancelCurrentSyncToolStripMenuItem.Name = "cancelCurrentSyncToolStripMenuItem";
-            this.cancelCurrentSyncToolStripMenuItem.Size = new System.Drawing.Size(328, 38);
-            this.cancelCurrentSyncToolStripMenuItem.Text = "Cancel Current Sync";
-            this.cancelCurrentSyncToolStripMenuItem.Click += new System.EventHandler(this.cancelCurrentSyncToolStripMenuItem_Click);
+            this.openMediaLocationToolStripMenuItem.Name = "openMediaLocationToolStripMenuItem";
+            this.openMediaLocationToolStripMenuItem.Size = new System.Drawing.Size(342, 36);
+            this.openMediaLocationToolStripMenuItem.Text = "Open Media Location";
+            this.openMediaLocationToolStripMenuItem.Click += new System.EventHandler(this.openMediaLocationToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator4
+            // 
+            this.toolStripSeparator4.Name = "toolStripSeparator4";
+            this.toolStripSeparator4.Size = new System.Drawing.Size(339, 6);
             // 
             // Form1
             // 
@@ -493,6 +509,8 @@
         private System.Windows.Forms.ToolStripMenuItem addToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem removeToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem cancelCurrentSyncToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem openMediaLocationToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
     }
 }
 

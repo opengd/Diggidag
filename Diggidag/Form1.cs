@@ -687,6 +687,26 @@ namespace Diggidag
                 tokenSource.Cancel(true);
             }
         }
+
+        private void openMediaLocationToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            foreach (DataGridViewRow row in dataGridView1.SelectedRows)
+            {
+                string path = string.Empty;
+                try
+                {
+                    path = Path.GetDirectoryName(@row.Cells[dataGridView1.Columns["FILENAME"].Index].Value as string);
+                    if (Directory.Exists(path))
+                        System.Diagnostics.Process.Start("explorer.exe", path);
+                    else
+                        throw new Exception("Could not open file location.\n\n" + path);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
+            }
+        }
     }
 
     public class ToolStripSpringTextBox : ToolStripTextBox
